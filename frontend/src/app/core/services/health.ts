@@ -45,6 +45,12 @@ export class HealthService {
     status$: this.monitorar(environment.faturamentoApiUrl),
   };
 
+  readonly assistente: Servico = {
+    nome: 'Serviço Assistente (IA)',
+    endereco: hostDe(environment.assistenteApiUrl),
+    status$: this.monitorar(environment.assistenteApiUrl),
+  };
+
   private monitorar(baseUrl: string): Observable<StatusServico> {
     return timer(0, 5000).pipe(
       // switchMap descarta uma verificação ainda em voo quando o próximo

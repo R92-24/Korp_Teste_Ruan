@@ -11,23 +11,36 @@ frontend (Angular + Angular Material)
         │
         ├── HTTP ──► serviço de Estoque (Go)      ──► Postgres "estoque"
         │
-        └── HTTP ──► serviço de Faturamento (Go)  ──► Postgres "faturamento"
+        ├── HTTP ──► serviço de Faturamento (Go)  ──► Postgres "faturamento"
+        │                     │
+        │                     └── HTTP ──► serviço de Estoque (baixa / estorno)
+        │
+        └── HTTP ──► serviço Assistente (Go)      ──► HTTP ──► serviço de Estoque (consulta de saldo)
                               │
-                              └── HTTP ──► serviço de Estoque (baixa / estorno)
+                              └── Anthropic API (conferência da nota, opcional)
 ```
 
 - **Serviço de Estoque** — CRUD de produtos (código, descrição, saldo) e movimentação de
   saldo (baixa/estorno).
 - **Serviço de Faturamento** — CRUD de notas fiscais (numeração sequencial, status
   Aberta/Fechada, itens) e orquestra a impressão, chamando o Estoque via HTTP.
-- Cada serviço tem seu **próprio banco de dados** (PostgreSQL) — sem acesso direto entre
-  bancos, apenas comunicação HTTP entre os serviços.
+- **Serviço Assistente** — conferência da nota antes da impressão (requisito opcional de uso
+  de IA), combinando verificações determinísticas com uma análise por IA quando há uma chave
+  de API configurada.
+- Cada serviço com banco tem o **seu próprio** (PostgreSQL) — sem acesso direto entre bancos,
+  apenas comunicação HTTP entre os serviços.
 
 ## Como rodar (Docker)
 
 Pré-requisito: Docker Desktop com virtualização (WSL2 ou Hyper-V) habilitada.
 
+O requisito opcional de IA precisa de uma chave da Anthropic. Sem ela o sistema funciona
+normalmente — a conferência de notas passa a usar apenas as verificações determinísticas.
+
 ```bash
+cp .env.example .env
+# edite .env e preencha ANTHROPIC_API_KEY (opcional)
+
 docker compose up --build
 ```
 
@@ -38,6 +51,7 @@ Serviços expostos:
 | Frontend               | http://localhost:4200   |
 | Serviço de Estoque     | http://localhost:8081   |
 | Serviço de Faturamento | http://localhost:8082   |
+| Serviço Assistente     | http://localhost:8083   |
 
 ## Como rodar sem Docker (desenvolvimento local)
 
@@ -94,6 +108,16 @@ ou dois `curl`/`Invoke-RestMethod` simultâneos em `POST /notas/:numero/imprimir
 consegue debitar o saldo; a outra recebe `409 SALDO_INSUFICIENTE` e permanece Aberta. Isso é
 garantido por um `UPDATE` atômico condicional no Postgres (`WHERE saldo >= quantidade`), sem
 necessidade de locks explícitos — ver `services/estoque/internal/produto/repository.go`.
+
+## Conferência de notas com IA (requisito opcional implementado)
+
+Na tela de detalhe de uma nota com itens, o botão **Conferir** chama o serviço Assistente, que
+roda verificações determinísticas (produto duplicado na nota, saldo insuficiente, nota que
+zeraria o saldo de um produto) e, se houver `ANTHROPIC_API_KEY` configurada, complementa com
+uma análise por IA. Cada observação mostra sua origem (`regra` ou `IA`) na interface.
+
+Sem chave configurada, o botão continua funcionando normalmente — a tela informa que a análise
+por IA está indisponível e mostra apenas as verificações automáticas.
 
 ## Testes
 

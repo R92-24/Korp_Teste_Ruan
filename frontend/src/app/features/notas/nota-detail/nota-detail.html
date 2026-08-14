@@ -4,6 +4,7 @@
     <div class="servicos">
       <app-service-badge [servico]="servicoFaturamento" />
       <app-service-badge [servico]="servicoEstoque" />
+      <app-service-badge [servico]="servicoAssistente" />
     </div>
   </div>
 
@@ -19,25 +20,79 @@
         <span class="created-at">Criada em {{ notaAtual.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
       </div>
 
-      <button
-        mat-flat-button
-        color="primary"
-        (click)="imprimir()"
-        [disabled]="notaAtual.status !== 'Aberta' || imprimindo() || notaAtual.itens.length === 0"
-      >
-        @if (imprimindo()) {
-          <ng-container>
-            <mat-spinner diameter="18" />
-            <span>Processando impressão...</span>
-          </ng-container>
-        } @else {
-          <ng-container>
-            <mat-icon>print</mat-icon>
-            <span>Imprimir</span>
-          </ng-container>
-        }
-      </button>
+      <div class="acoes-principais">
+        <button
+          mat-stroked-button
+          (click)="conferir()"
+          [disabled]="conferindo() || notaAtual.itens.length === 0"
+        >
+          @if (conferindo()) {
+            <ng-container>
+              <mat-spinner diameter="18" />
+              <span>Conferindo...</span>
+            </ng-container>
+          } @else {
+            <ng-container>
+              <mat-icon>fact_check</mat-icon>
+              <span>Conferir</span>
+            </ng-container>
+          }
+        </button>
+
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="imprimir()"
+          [disabled]="notaAtual.status !== 'Aberta' || imprimindo() || notaAtual.itens.length === 0"
+        >
+          @if (imprimindo()) {
+            <ng-container>
+              <mat-spinner diameter="18" />
+              <span>Processando impressão...</span>
+            </ng-container>
+          } @else {
+            <ng-container>
+              <mat-icon>print</mat-icon>
+              <span>Imprimir</span>
+            </ng-container>
+          }
+        </button>
+      </div>
     </header>
+
+    @if (resultadoConferencia(); as conferencia) {
+      <div class="conferencia-painel" [class.sem-ia]="!conferencia.iaDisponivel">
+        <div class="conferencia-cabecalho">
+          <mat-icon>{{ conferencia.iaDisponivel ? 'auto_awesome' : 'checklist' }}</mat-icon>
+          <div>
+            <strong>{{ conferencia.iaDisponivel ? 'Conferência com IA' : 'Conferência (regras automáticas)' }}</strong>
+            <p>{{ conferencia.resumo }}</p>
+            @if (!conferencia.iaDisponivel && conferencia.motivoIa) {
+              <p class="motivo-ia">{{ conferencia.motivoIa }}</p>
+            }
+          </div>
+        </div>
+
+        @if (conferencia.observacoes.length > 0) {
+          <ul class="observacoes">
+            @for (obs of conferencia.observacoes; track obs.titulo) {
+              <li [class]="obs.severidade">
+                <mat-icon>
+                  {{ obs.severidade === 'alerta' ? 'error' : obs.severidade === 'atencao' ? 'warning' : 'info' }}
+                </mat-icon>
+                <div>
+                  <div class="obs-titulo">
+                    {{ obs.titulo }}
+                    <span class="obs-origem">{{ obs.origem === 'ia' ? 'IA' : 'regra' }}</span>
+                  </div>
+                  <div class="obs-detalhe">{{ obs.detalhe }}</div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
 
     @if (notaAtual.status === 'Aberta') {
       <div class="add-item-form">

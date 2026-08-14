@@ -13,13 +13,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { NotaService } from '../../../core/services/nota';
 import { ProdutoService } from '../../../core/services/produto';
 import { NotificationService } from '../../../core/services/notification';
 import { HealthService } from '../../../core/services/health';
+import { ConferenciaService } from '../../../core/services/conferencia';
 import { ItemNota, NotaFiscal } from '../../../core/models/nota.model';
 import { Produto } from '../../../core/models/produto.model';
+import { ConferenciaResultado } from '../../../core/models/conferencia.model';
 import { ServiceBadge } from '../../../shared/service-badge/service-badge';
 
 @Component({
@@ -36,6 +39,7 @@ import { ServiceBadge } from '../../../shared/service-badge/service-badge';
     MatInputModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule,
+    MatExpansionModule,
     ServiceBadge,
   ],
   templateUrl: './nota-detail.html',
@@ -47,12 +51,17 @@ export class NotaDetail implements OnInit, OnDestroy {
   private readonly produtoService = inject(ProdutoService);
   private readonly notification = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly conferenciaService = inject(ConferenciaService);
 
   // Imprimir depende dos dois serviços: o Faturamento fecha a nota e o
   // Estoque debita o saldo. Por isso a tela exibe o estado de ambos.
   private readonly health = inject(HealthService);
   readonly servicoFaturamento = this.health.faturamento;
   readonly servicoEstoque = this.health.estoque;
+  readonly servicoAssistente = this.health.assistente;
+
+  readonly conferindo = signal(false);
+  readonly resultadoConferencia = signal<ConferenciaResultado | null>(null);
 
   // Subject + takeUntil usados deliberadamente aqui (em conjunto com o hook
   // ngOnDestroy) para demonstrar o padrão clássico de cancelamento de
@@ -167,6 +176,7 @@ export class NotaDetail implements OnInit, OnDestroy {
           this.selectedProduto = null;
           this.buscaProdutoControl.reset('');
           this.quantidadeControl.reset(1);
+          this.resultadoConferencia.set(null);
           this.carregar(notaAtual.numero);
         },
         error: (err) => {
@@ -185,6 +195,7 @@ export class NotaDetail implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.notification.success('Item removido da nota.');
+          this.resultadoConferencia.set(null);
           this.carregar(notaAtual.numero);
         },
         error: (err) => this.notification.errorFromResponse(err, 'Falha ao remover item da nota.'),
@@ -215,6 +226,41 @@ export class NotaDetail implements OnInit, OnDestroy {
         error: (err) => {
           this.imprimindo.set(false);
           this.notification.errorFromResponse(err, 'Falha ao imprimir a nota. A nota permanece aberta.');
+        },
+      });
+  }
+
+  // Requisito opcional de uso de IA: antes de imprimir, o usuário pode pedir
+  // uma conferência da nota. O backend sempre roda verificações
+  // determinísticas (duplicidade, saldo); quando há uma chave de API
+  // configurada, complementa com uma análise por IA. O botão funciona nos
+  // dois cenários — a interface só muda o que exibe conforme
+  // `resultado.iaDisponivel`.
+  conferir(): void {
+    const notaAtual = this.nota();
+    if (!notaAtual || notaAtual.itens.length === 0) return;
+
+    this.conferindo.set(true);
+    this.resultadoConferencia.set(null);
+
+    this.conferenciaService
+      .conferir({
+        numero: notaAtual.numero,
+        itens: notaAtual.itens.map((item) => ({
+          codigo: item.codigo,
+          descricao: item.descricao,
+          quantidade: item.quantidade,
+        })),
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resultado) => {
+          this.conferindo.set(false);
+          this.resultadoConferencia.set(resultado);
+        },
+        error: (err) => {
+          this.conferindo.set(false);
+          this.notification.errorFromResponse(err, 'Falha ao conferir a nota.');
         },
       });
   }

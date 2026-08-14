@@ -41,10 +41,11 @@ cd "C:\Users\PC  Gamer\.vscode\Korp_Teste_Ruan"
 
 > "Olá, meu nome é Ruan. Este é o teste técnico da Korp: um sistema de emissão de
 > notas fiscais construído com arquitetura de microsserviços — um Angular no
-> frontend e dois serviços em Go no backend, cada um com seu próprio banco
-> PostgreSQL, tudo orquestrado por Docker Compose."
+> frontend e três serviços em Go no backend: Estoque e Faturamento, cada um com
+> seu próprio banco PostgreSQL, e um terceiro serviço, o Assistente, que faz a
+> conferência de notas com IA. Tudo orquestrado por Docker Compose."
 
-Mostre rapidamente o `docker compose ps` no PowerShell, para evidenciar os cinco
+Mostre rapidamente o `docker compose ps` no PowerShell, para evidenciar os seis
 containers rodando:
 
 ```powershell
@@ -181,7 +182,34 @@ Deixe o script rodar e mostre o resultado na tela.
 
 ---
 
-## Parte 8 — Detalhamento técnico (3 a 4 minutos) ⭐ exigido no PDF
+## Parte 8 — Conferência com IA (1 a 2 minutos) ⭐ requisito opcional implementado
+
+1. Numa nota **Aberta** com itens (pode ser a mesma da Parte 3, se ainda estiver aberta,
+   ou crie uma nova)
+2. Aponte o **terceiro selo de serviço** no topo — "Serviço Assistente (IA)"
+3. Clique em **Conferir**
+4. Mostre o painel que aparece: o resumo e as observações, cada uma marcada como
+   **regra** ou **IA**
+5. Se quiser demonstrar o caminho sem IA: no PowerShell, rode
+   `docker compose stop assistente`, tente conferir de novo — a interface some é o
+   painel ainda funciona, mas mostra só as verificações automáticas, com a explicação
+   de que a IA está indisponível. Religue com `docker compose start assistente`.
+
+> "Este é o requisito opcional de uso de Inteligência Artificial: uma conferência da
+> nota antes da impressão, porque imprimir é irreversível — fecha a nota e debita o
+> estoque. É um terceiro microsserviço, que roda verificações determinísticas — item
+> duplicado, saldo insuficiente — e complementa com uma análise por IA quando há uma
+> chave de API configurada."
+
+> "Um ponto que quero destacar: sem a chave, o botão continua funcionando
+> normalmente, só com as verificações automáticas — a ausência de IA não é tratada
+> como erro em nenhum lugar do sistema. E cada observação mostra sua origem, regra ou
+> IA, porque uma é um fato exato e a outra é uma sugestão sujeita a revisão — misturar
+> as duas sem distinção esconderia essa diferença do usuário."
+
+---
+
+## Parte 9 — Detalhamento técnico (3 a 4 minutos) ⭐ exigido no PDF
 
 Abra o **VS Code** e vá comentando, com o código na tela. O conteúdo completo está
 em `docs/DETALHAMENTO_TECNICO.md` — use como cola.
@@ -261,14 +289,15 @@ Mostre a função `compensar`:
 
 ---
 
-## Parte 9 — Encerramento (30 segundos)
+## Parte 10 — Encerramento (30 segundos)
 
 > "Resumindo: os três requisitos obrigatórios foram atendidos — arquitetura de
-> microsserviços com dois serviços independentes, tratamento de falha com
+> microsserviços com três serviços independentes, tratamento de falha com
 > recuperação e feedback ao usuário, e persistência real em PostgreSQL. Além
-> disso, implementei o requisito opcional de tratamento de concorrência. O
-> repositório tem um README com as instruções para rodar tudo com um único comando
-> de docker compose. Obrigado!"
+> disso, implementei dois requisitos opcionais: tratamento de concorrência e uso
+> de Inteligência Artificial na conferência das notas. O repositório tem um README
+> com as instruções para rodar tudo com um único comando de docker compose.
+> Obrigado!"
 
 ---
 
@@ -277,7 +306,8 @@ Mostre a função `compensar`:
 - [ ] O vídeo mostra todas as telas desenvolvidas
 - [ ] O vídeo mostra o saldo sendo debitado após a impressão
 - [ ] O vídeo mostra o cenário de falha **e** a recuperação
-- [ ] O vídeo tem o detalhamento técnico falado (Parte 8)
+- [ ] O vídeo mostra a conferência com IA (Parte 8)
+- [ ] O vídeo tem o detalhamento técnico falado (Parte 9)
 - [ ] Vídeo subido no Google Drive / OneDrive **com link público**
 - [ ] Repositório GitHub `Korp_Teste_Ruan` criado como **público**
 - [ ] E-mail para **rh@korp.com.br** com: link do repositório + link do vídeo +

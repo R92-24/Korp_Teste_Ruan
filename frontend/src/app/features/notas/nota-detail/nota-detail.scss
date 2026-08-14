@@ -104,3 +104,108 @@ table {
   text-align: center;
   padding: 1rem;
 }
+
+.acoes-principais {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.conferencia-painel {
+  border: 1px solid rgba(103, 58, 183, 0.28);
+  background: #f8f5fc;
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+
+  &.sem-ia {
+    border-color: rgba(0, 0, 0, 0.14);
+    background: #fafafa;
+  }
+}
+
+.conferencia-cabecalho {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+
+  mat-icon {
+    color: #673ab7;
+    margin-top: 0.1rem;
+  }
+
+  p {
+    margin: 0.2rem 0 0;
+    color: rgba(0, 0, 0, 0.72);
+  }
+
+  .motivo-ia {
+    font-size: 0.82rem;
+    color: rgba(0, 0, 0, 0.55);
+    font-style: italic;
+  }
+}
+
+.sem-ia .conferencia-cabecalho mat-icon {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.observacoes {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.6rem 0.7rem;
+    border-radius: 6px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      margin-top: 0.1rem;
+      flex-shrink: 0;
+    }
+
+    &.info mat-icon {
+      color: #0d47a1;
+    }
+    &.atencao mat-icon {
+      color: #e65100;
+    }
+    &.alerta mat-icon {
+      color: #b71c1c;
+    }
+  }
+}
+
+.obs-titulo {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.obs-origem {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.obs-detalhe {
+  font-size: 0.88rem;
+  color: rgba(0, 0, 0, 0.72);
+  margin-top: 0.15rem;
+}

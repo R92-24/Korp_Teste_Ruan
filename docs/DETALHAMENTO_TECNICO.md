@@ -87,22 +87,33 @@ técnica e não por falta de opção:
 
 ## Gerenciamento de dependências no Golang
 
-Cada microsserviço (`services/estoque` e `services/faturamento`) é um módulo Go
-independente, com seu próprio `go.mod`/`go.sum` (**Go Modules**, o gerenciador de
-dependências nativo da linguagem desde o Go 1.11). Os módulos declaram versões fixas das
-dependências diretas (Gin, pgx, gin-contrib/cors) e o `go.sum` garante a integridade
-(checksum) de todas as dependências transitivas, permitindo builds reprodutíveis. Cada
-serviço é buildado isoladamente (multi-stage `Dockerfile`), sem compartilhar dependências
-entre si — reforçando o desacoplamento entre microsserviços.
+Cada um dos **três microsserviços** (`services/estoque`, `services/faturamento` e
+`services/assistente`) é um módulo Go independente, com seu próprio `go.mod`/`go.sum`
+(**Go Modules**, o gerenciador de dependências nativo da linguagem desde o Go 1.11). Os
+módulos declaram versões fixas das dependências diretas (Gin, pgx, gin-contrib/cors e, no
+Assistente, o SDK oficial da Anthropic) e o `go.sum` garante a integridade (checksum) de
+todas as dependências transitivas, permitindo builds reprodutíveis. Cada serviço é buildado
+isoladamente (multi-stage `Dockerfile`), sem compartilhar dependências entre si — reforçando
+o desacoplamento entre microsserviços. O Assistente usa Go 1.24 (exigido pelo SDK da
+Anthropic), enquanto Estoque e Faturamento usam Go 1.22 — a versão da linguagem é uma decisão
+por serviço, não uma decisão do projeto como um todo, mais uma demonstração de que os
+serviços evoluem de forma independente.
 
 ## Frameworks utilizados no Golang
 
 - **[Gin](https://github.com/gin-gonic/gin)** — framework HTTP para roteamento, binding e
   validação de payloads JSON, e middlewares (logging, recovery de panics, CORS via
-  `gin-contrib/cors`).
+  `gin-contrib/cors`), usado nos três serviços.
 - **[pgx](https://github.com/jackc/pgx)** (`pgxpool`) — driver/pool de conexões PostgreSQL,
-  usado com SQL explícito (sem ORM), para manter controle total sobre as queries e sobre o
-  update atômico usado no tratamento de concorrência.
+  usado com SQL explícito (sem ORM) no Estoque e no Faturamento, para manter controle total
+  sobre as queries e sobre o update atômico usado no tratamento de concorrência. O Assistente
+  não tem banco próprio (não guarda estado — cada conferência é independente), então não usa
+  este driver.
+- **[anthropic-sdk-go](https://github.com/anthropics/anthropic-sdk-go)** — SDK oficial da
+  Anthropic, usado no serviço Assistente para a conferência de notas por IA (requisito
+  opcional). Uma única chamada síncrona por conferência, sem streaming e sem tool use — a
+  tarefa é analisar um payload pequeno e devolver uma resposta estruturada, não conduzir um
+  agente com múltiplas etapas.
 
 Não foi utilizado C#/.NET nesta implementação (a escolha de stack do backend foi Go), então
 o item sobre uso de LINQ não se aplica.
@@ -152,8 +163,9 @@ A estratégia de teste segue a natureza de cada garantia:
 
 ## Requisitos obrigatórios — como foram atendidos
 
-- **Arquitetura de microsserviços**: dois serviços independentes (Estoque e Faturamento),
-  cada um com seu próprio banco de dados PostgreSQL, comunicando-se apenas via HTTP.
+- **Arquitetura de microsserviços**: o mínimo exigido eram dois; o projeto tem **três**
+  serviços independentes — Estoque, Faturamento e Assistente —, os dois primeiros com seu
+  próprio banco de dados PostgreSQL, comunicando-se apenas via HTTP.
 - **Tratamento de falhas**: descrito no `README.md`, seção "Cenário de falha" — o Faturamento
   detecta a indisponibilidade do Estoque (timeout/erro de conexão), tenta se recuperar via
   retry, e se persistir, informa um erro claro ao usuário mantendo a nota em um estado
@@ -199,5 +211,49 @@ Verificado na prática com duas requisições simultâneas de impressão para a 
 fecha a nota e debita o estoque, a outra recebe `409` e não produz efeito algum. Um produto
 com saldo 10 numa nota de 3 unidades termina com saldo 7 — nunca 4.
 
-O requisito opcional de **uso de Inteligência Artificial** não foi implementado, por escolha
-de escopo.
+## Requisito opcional implementado — Uso de Inteligência Artificial
+
+Terceiro microsserviço, o **Serviço Assistente** (`services/assistente`, porta 8083), que
+oferece uma **conferência da nota antes da impressão** — a impressão é irreversível (fecha a
+nota e debita o estoque), então o valor está em revisar antes de um clique que não tem volta,
+e não em automatizar o clique em si.
+
+### Onde e como
+
+Botão **Conferir** na tela de detalhe da nota, ao lado do botão Imprimir. Chama
+`POST /conferencia` no serviço Assistente, que:
+
+1. Consulta o saldo atual de cada produto no Estoque (via HTTP, como o Faturamento faz).
+2. Roda **verificações determinísticas** (`internal/conferencia/regras.go`): produto lançado
+   em mais de um item da mesma nota, quantidade pedida maior que o saldo disponível, nota que
+   zeraria o saldo de um produto. Essas regras rodam sempre, com ou sem IA.
+3. Se houver uma chave de API configurada, envia o conjunto (itens, saldos, o que as regras já
+   encontraram) para o modelo, pedindo que ele acrescente apenas observações que uma regra fixa
+   não pegaria — por exemplo, uma quantidade que destoa do padrão da nota, ou indício de
+   produtos trocados entre si. O prompt instrui explicitamente a não repetir o que as regras já
+   apontaram.
+
+### Degradação graciosa sem chave de API
+
+A ausência de `ANTHROPIC_API_KEY` **não é tratada como erro**. O serviço sobe normalmente
+(`/health` informa `iaDisponivel: false`), a conferência responde apenas com as regras
+determinísticas, e a interface mostra o motivo (`"Nenhuma chave de API configurada..."`) em
+vez de simplesmente omitir a seção. O mesmo acontece se a chamada ao modelo falhar por
+qualquer outro motivo (rede, limite de uso): o erro é logado, mas a conferência responde com o
+que as regras já produziram, em vez de falhar a requisição inteira. Isso é o que permite o
+projeto ser avaliado por qualquer pessoa, com ou sem uma chave configurada.
+
+### Uso do SDK
+
+Cliente oficial `github.com/anthropics/anthropic-sdk-go`, modelo `claude-opus-5` por padrão
+(configurável via `ANTHROPIC_MODEL`). Chamada única e síncrona por conferência — sem streaming
+e sem uso de ferramentas (tool use), porque a tarefa é análise de um payload pequeno e bem
+definido, não um agente multi-etapas.
+
+### Origem das observações é sempre explícita
+
+Cada observação retornada carrega `origem: "regra"` ou `origem: "ia"`, exibido na interface
+como um selo. Isso não é só transparência: uma verificação de saldo é um fato exato, enquanto
+uma sugestão da IA é uma interpretação sujeita a revisão — misturar as duas sem distinção
+esconderia essa diferença de confiabilidade do usuário, especialmente numa operação que ele
+está prestes a tornar irreversível.

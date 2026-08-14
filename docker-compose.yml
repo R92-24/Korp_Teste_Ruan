@@ -60,6 +60,23 @@ services:
       estoque:
         condition: service_started
 
+  # Terceiro microsserviço: conferência de notas com IA (requisito opcional).
+  # ANTHROPIC_API_KEY vem do arquivo .env na raiz do projeto (não versionado —
+  # veja .env.example). Sem a chave, o serviço sobe normalmente e responde
+  # apenas com as verificações determinísticas.
+  assistente:
+    build: ./services/assistente
+    environment:
+      PORT: 8080
+      ESTOQUE_BASE_URL: http://estoque:8080
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+    ports:
+      - "8083:8080"
+    depends_on:
+      estoque:
+        condition: service_started
+
   frontend:
     build: ./frontend
     ports:
@@ -67,6 +84,7 @@ services:
     depends_on:
       - estoque
       - faturamento
+      - assistente
 
 volumes:
   estoque_db_data:
