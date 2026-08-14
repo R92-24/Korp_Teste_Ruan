@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject, of } from 'rxjs';
+import { Subject, forkJoin, of, timer } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 
 import { MatTableModule } from '@angular/material/table';
@@ -195,9 +195,17 @@ export class NotaDetail implements OnInit, OnDestroy {
     const notaAtual = this.nota();
     if (!notaAtual) return;
     this.imprimindo.set(true);
-    this.notaService
-      .imprimir(notaAtual.numero)
-      .pipe(takeUntil(this.destroy$))
+
+    // A impressão costuma responder em algumas dezenas de milissegundos, o que
+    // faria o indicador de processamento piscar e sumir antes de o usuário
+    // perceber. O forkJoin com um timer garante um tempo mínimo de exibição,
+    // evitando esse "flash" de estado de carregamento. Em caso de erro o
+    // forkJoin propaga na hora, sem esperar o timer.
+    forkJoin([this.notaService.imprimir(notaAtual.numero), timer(700)])
+      .pipe(
+        map(([nota]) => nota),
+        takeUntil(this.destroy$),
+      )
       .subscribe({
         next: (nota) => {
           this.imprimindo.set(false);

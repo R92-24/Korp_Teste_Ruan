@@ -28,6 +28,11 @@ combinadores explícitos:
   é debounced em 250ms, ignora valores repetidos e usa `switchMap` para produzir a lista
   filtrada mais atual, cancelando automaticamente qualquer processamento anterior ainda em
   andamento.
+- **`forkJoin` + `timer`** — no botão de impressão. A operação responde em algumas dezenas de
+  milissegundos, o que faria o indicador de processamento piscar e sumir antes de o usuário
+  perceber. O `forkJoin` combina a requisição com um `timer`, garantindo um tempo mínimo de
+  exibição e evitando o *flash* de estado de carregamento. Em caso de erro o `forkJoin`
+  propaga imediatamente, sem esperar o timer.
 - **`timer` + `switchMap` + `catchError` + `shareReplay`** — no monitoramento de saúde dos
   microsserviços (`core/services/health.ts`), que alimenta o indicador de status exibido em
   cada tela. Três decisões valem destaque:
@@ -178,5 +183,21 @@ De forma análoga, a nota fiscal só pode ser impressa uma vez: `FecharSeAberta`
 (`UPDATE ... WHERE status = 'Aberta'`) para garantir que duas requisições de impressão
 simultâneas para a **mesma** nota não dupliquem a baixa de estoque.
 
-Os requisitos opcionais de **uso de Inteligência Artificial** e **idempotência explícita**
-não foram implementados nesta entrega, por escolha de escopo.
+## Sobre o requisito opcional de Idempotência
+
+Não foi implementado um mecanismo formal de idempotência (com chave `Idempotency-Key` e
+registro das requisições já processadas). Ainda assim, o efeito colateral mais provável de
+uma operação repetida — **imprimir a mesma nota duas vezes**, seja por duplo clique, por
+reenvio ou por retry de rede — está coberto pelo mesmo `UPDATE` atômico descrito acima:
+
+```sql
+UPDATE notas SET status = 'Fechada', closed_at = now()
+WHERE numero = $1 AND status = 'Aberta'
+```
+
+Verificado na prática com duas requisições simultâneas de impressão para a mesma nota: uma
+fecha a nota e debita o estoque, a outra recebe `409` e não produz efeito algum. Um produto
+com saldo 10 numa nota de 3 unidades termina com saldo 7 — nunca 4.
+
+O requisito opcional de **uso de Inteligência Artificial** não foi implementado, por escolha
+de escopo.
