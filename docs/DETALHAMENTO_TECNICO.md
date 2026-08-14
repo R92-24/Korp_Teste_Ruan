@@ -28,6 +28,17 @@ combinadores explícitos:
   é debounced em 250ms, ignora valores repetidos e usa `switchMap` para produzir a lista
   filtrada mais atual, cancelando automaticamente qualquer processamento anterior ainda em
   andamento.
+- **`timer` + `switchMap` + `catchError` + `shareReplay`** — no monitoramento de saúde dos
+  microsserviços (`core/services/health.ts`), que alimenta o indicador de status exibido em
+  cada tela. Três decisões valem destaque:
+  - o `catchError` fica **dentro** do `switchMap`, e não no fim do pipe: se ficasse fora, o
+    primeiro erro completaria o fluxo e o monitoramento nunca se recuperaria quando o
+    serviço voltasse — exatamente o cenário de falha exigido no teste;
+  - o `shareReplay({ refCount: true })` faz com que todos os componentes que exibem o mesmo
+    serviço compartilhem um único fluxo de polling, em vez de cada um abrir o seu, e encerra
+    o `timer` quando ninguém mais está observando;
+  - o `distinctUntilChanged` evita repintar a interface a cada verificação, emitindo apenas
+    quando o status realmente muda.
 - **`takeUntil`** — cancelamento de assinaturas ligado ao ciclo de vida do componente
   (`NotaDetail`), como descrito acima.
 - **`takeUntilDestroyed`** — mesmo propósito, usado nos demais componentes com a API mais

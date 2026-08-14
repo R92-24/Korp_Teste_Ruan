@@ -1,5 +1,11 @@
 <section class="page">
-  <a routerLink="/notas" class="back-link">&larr; Voltar para notas</a>
+  <div class="topo">
+    <a routerLink="/notas" class="back-link">&larr; Voltar para notas</a>
+    <div class="servicos">
+      <app-service-badge [servico]="servicoFaturamento" />
+      <app-service-badge [servico]="servicoEstoque" />
+    </div>
+  </div>
 
   @if (loading()) {
     <mat-spinner diameter="32" />

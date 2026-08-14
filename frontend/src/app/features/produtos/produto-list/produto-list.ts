@@ -12,8 +12,10 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { ProdutoService } from '../../../core/services/produto';
 import { NotificationService } from '../../../core/services/notification';
+import { HealthService } from '../../../core/services/health';
 import { Produto } from '../../../core/models/produto.model';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
+import { ServiceBadge } from '../../../shared/service-badge/service-badge';
 
 @Component({
   selector: 'app-produto-list',
@@ -26,6 +28,7 @@ import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    ServiceBadge,
   ],
   templateUrl: './produto-list.html',
   styleUrl: './produto-list.scss',
@@ -36,6 +39,9 @@ export class ProdutoList implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+
+  // Esta tela é servida pelo microsserviço de Estoque.
+  readonly servico = inject(HealthService).estoque;
 
   readonly displayedColumns = ['codigo', 'descricao', 'saldo', 'acoes'];
   readonly produtos = signal<Produto[]>([]);

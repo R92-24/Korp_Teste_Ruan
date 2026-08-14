@@ -1,6 +1,9 @@
 <section class="page">
   <header class="page-header">
-    <h1>Notas Fiscais</h1>
+    <div class="titulo">
+      <h1>Notas Fiscais</h1>
+      <app-service-badge [servico]="servico" />
+    </div>
     <button mat-flat-button color="primary" (click)="novaNota()" [disabled]="creating()">
       @if (creating()) {
         <mat-spinner diameter="18" />

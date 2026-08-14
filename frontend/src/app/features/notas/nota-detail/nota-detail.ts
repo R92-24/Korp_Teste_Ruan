@@ -18,8 +18,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NotaService } from '../../../core/services/nota';
 import { ProdutoService } from '../../../core/services/produto';
 import { NotificationService } from '../../../core/services/notification';
+import { HealthService } from '../../../core/services/health';
 import { ItemNota, NotaFiscal } from '../../../core/models/nota.model';
 import { Produto } from '../../../core/models/produto.model';
+import { ServiceBadge } from '../../../shared/service-badge/service-badge';
 
 @Component({
   selector: 'app-nota-detail',
@@ -36,6 +38,7 @@ import { Produto } from '../../../core/models/produto.model';
     MatInputModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule,
+    ServiceBadge,
   ],
   templateUrl: './nota-detail.html',
   styleUrl: './nota-detail.scss',
@@ -46,6 +49,12 @@ export class NotaDetail implements OnInit, OnDestroy {
   private readonly produtoService = inject(ProdutoService);
   private readonly notification = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
+
+  // Imprimir depende dos dois serviços: o Faturamento fecha a nota e o
+  // Estoque debita o saldo. Por isso a tela exibe o estado de ambos.
+  private readonly health = inject(HealthService);
+  readonly servicoFaturamento = this.health.faturamento;
+  readonly servicoEstoque = this.health.estoque;
 
   // Subject + takeUntil usados deliberadamente aqui (em conjunto com o hook
   // ngOnDestroy) para demonstrar o padrão clássico de cancelamento de

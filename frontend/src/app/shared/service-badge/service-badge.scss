@@ -1,0 +1,82 @@
+.service-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.7rem;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.02);
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: rgba(0, 0, 0, 0.68);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9e9e9e;
+  flex-shrink: 0;
+}
+
+.nome {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.82);
+}
+
+.sep {
+  opacity: 0.45;
+}
+
+.endereco {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  opacity: 0.75;
+}
+
+.status {
+  margin-left: 0.15rem;
+  padding-left: 0.55rem;
+  border-left: 1px solid rgba(0, 0, 0, 0.14);
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+/* No ar */
+.service-badge.online {
+  border-color: rgba(27, 94, 32, 0.3);
+  background: #edf7ee;
+  color: #1b5e20;
+
+  .nome { color: #14471a; }
+  .dot {
+    background: #2e7d32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.18);
+  }
+  .status { border-left-color: rgba(27, 94, 32, 0.25); }
+}
+
+/* Fora do ar — é este o estado que aparece ao derrubar o serviço no Docker */
+.service-badge.offline {
+  border-color: rgba(183, 28, 28, 0.35);
+  background: #fdeded;
+  color: #b71c1c;
+
+  .nome { color: #8e1414; }
+  .dot {
+    background: #d32f2f;
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.18);
+    animation: pulsar 1.4s ease-in-out infinite;
+  }
+  .status { border-left-color: rgba(183, 28, 28, 0.28); }
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-badge.offline .dot { animation: none; }
+}

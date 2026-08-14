@@ -11,6 +11,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+
+    h1 {
+      margin: 0;
+    }
+  }
 }
 
 table {

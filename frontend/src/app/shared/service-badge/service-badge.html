@@ -1,0 +1,15 @@
+@let status = servico.status$ | async;
+
+<div class="service-badge" [class]="status" [attr.title]="servico.nome + ' em ' + servico.endereco">
+  <span class="dot" aria-hidden="true"></span>
+  <span class="nome">{{ servico.nome }}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span class="endereco">{{ servico.endereco }}</span>
+  <span class="status">
+    @switch (status) {
+      @case ('online') { no ar }
+      @case ('offline') { fora do ar }
+      @default { verificando… }
+    }
+  </span>
+</div>

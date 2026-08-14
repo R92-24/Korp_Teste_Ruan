@@ -7,6 +7,18 @@
   margin: 0 auto;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  h1 {
+    margin: 0;
+  }
+}
+
 .produto-form {
   display: flex;
   flex-wrap: wrap;

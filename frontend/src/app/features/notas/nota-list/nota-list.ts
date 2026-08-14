@@ -9,11 +9,21 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { NotaService } from '../../../core/services/nota';
 import { NotificationService } from '../../../core/services/notification';
+import { HealthService } from '../../../core/services/health';
 import { NotaFiscal } from '../../../core/models/nota.model';
+import { ServiceBadge } from '../../../shared/service-badge/service-badge';
 
 @Component({
   selector: 'app-nota-list',
-  imports: [CommonModule, DatePipe, MatTableModule, MatButtonModule, MatChipsModule, MatProgressSpinnerModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    MatTableModule,
+    MatButtonModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    ServiceBadge,
+  ],
   templateUrl: './nota-list.html',
   styleUrl: './nota-list.scss',
 })
@@ -22,6 +32,9 @@ export class NotaList implements OnInit {
   private readonly notification = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+
+  // Esta tela é servida pelo microsserviço de Faturamento.
+  readonly servico = inject(HealthService).faturamento;
 
   readonly displayedColumns = ['numero', 'status', 'createdAt', 'acoes'];
   readonly notas = signal<NotaFiscal[]>([]);

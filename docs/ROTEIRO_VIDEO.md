@@ -123,24 +123,32 @@ catch { "Bloqueado pelo backend: $($_.Exception.Response.StatusCode)" }
 ## Parte 6 — Cenário de falha (2 minutos) ⭐ requisito obrigatório
 
 1. Crie uma **nova nota** e adicione um item (ex.: `P001`, quantidade `1`)
-2. **Não imprima ainda.** Vá ao PowerShell e derrube o serviço de Estoque:
+2. **Aponte os dois selos de serviço** no topo da tela — ambos verdes, "no ar"
+3. **Não imprima ainda.** Vá ao PowerShell e derrube o serviço de Estoque:
 
 ```powershell
 docker compose stop estoque
 ```
 
-3. Mostre no `docker compose ps` que o container está parado
-4. Volte ao navegador e clique em **Imprimir**
-5. **Mostre a mensagem de erro** que aparece na tela
-6. Mostre que a nota **continua Aberta** (recarregue a página se quiser provar)
-7. Volte ao PowerShell e religue o serviço:
+4. Volte ao navegador **sem clicar em nada** e espere alguns segundos: o selo do
+   Estoque fica **vermelho e piscando**, enquanto o do Faturamento continua verde
+5. Clique em **Imprimir**
+6. **Mostre a mensagem de erro** que aparece na tela
+7. Mostre que a nota **continua Aberta** (recarregue a página se quiser provar)
+8. Volte ao PowerShell e religue o serviço:
 
 ```powershell
 docker compose start estoque
 ```
 
-8. Clique em **Imprimir** de novo → agora funciona
-9. Mostre o saldo do produto tendo sido debitado corretamente
+9. Espere o selo do Estoque voltar a **verde** sozinho
+10. Clique em **Imprimir** de novo → agora funciona
+11. Mostre o saldo do produto tendo sido debitado corretamente
+
+> "Repare que a própria interface monitora os microsserviços: cada tela mostra de
+> qual serviço ela depende e se ele está no ar. Ao derrubar o Estoque, só o selo
+> dele fica vermelho — o Faturamento continua funcionando normalmente, o que
+> evidencia que são serviços realmente independentes."
 
 > "Aqui está o tratamento de falhas. Com o serviço de Estoque fora do ar, o
 > Faturamento tenta se recuperar sozinho fazendo algumas tentativas com timeout
