@@ -70,7 +70,15 @@ combinadores explícitos:
   erro de falha do microsserviço de Estoque durante a impressão.
 - `MatDialog` — confirmação antes de excluir um produto (`ConfirmDialog`,
   `src/app/shared/confirm-dialog`).
-- `MatChips` — indicação visual do status da nota (`Aberta`/`Fechada`).
+
+Dois elementos foram feitos com CSS próprio em vez de componentes do Material, por decisão
+técnica e não por falta de opção:
+
+- **Selo de status da nota** (`Aberta`/`Fechada`) — começou como `MatChips`, mas os estilos
+  internos do componente venciam por especificidade e a cor do status não chegava a
+  aparecer. Um selo próprio resolve com poucas linhas e resultado previsível.
+- **Indicador de saúde dos microsserviços** (`ServiceBadge`) — não existe equivalente pronto
+  no Material, e o componente precisa de estados próprios (verificando/no ar/fora do ar).
 
 ## Gerenciamento de dependências no Golang
 

@@ -211,9 +211,13 @@ No mesmo arquivo, mostre o bloco do `buscaProdutoControl.valueChanges`:
 > "Para componentes visuais usei o Angular Material: MatTable nas listagens,
 > MatFormField e MatAutocomplete nos formulários, MatProgressSpinner no indicador
 > de processamento da impressão, MatSnackBar para o feedback de erro e sucesso,
-> MatDialog para a confirmação de exclusão e MatChips para o status da nota. Além
-> disso, Reactive Forms para os formulários com validação e o Angular Router para
-> navegação."
+> MatDialog para a confirmação de exclusão. Além disso, Reactive Forms para os
+> formulários com validação e o Angular Router para navegação."
+
+> "Dois elementos eu fiz com CSS próprio: o selo de status da nota e o indicador
+> de saúde dos serviços. O de status começou como MatChips, mas os estilos
+> internos do componente venciam por especificidade e a cor não aparecia — com
+> CSS próprio resolvi em poucas linhas e com resultado previsível."
 
 ### 8.4 Gerenciamento de dependências no Go
 
