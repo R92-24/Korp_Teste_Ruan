@@ -95,6 +95,48 @@ consegue debitar o saldo; a outra recebe `409 SALDO_INSUFICIENTE` e permanece Ab
 garantido por um `UPDATE` atômico condicional no Postgres (`WHERE saldo >= quantidade`), sem
 necessidade de locks explícitos — ver `services/estoque/internal/produto/repository.go`.
 
+## Testes
+
+**Frontend** (8 testes):
+
+```bash
+cd frontend
+npm test
+```
+
+**Backend.** Os testes do Faturamento cobrem o tratamento de falhas — retry em
+erro transitório, desistência com erro claro, e a ausência de retry em erro de
+negócio — usando um servidor HTTP falso, sem precisar de banco:
+
+```bash
+cd services/faturamento
+go test ./...
+```
+
+Os testes do Estoque são de integração: a garantia de concorrência vem da
+atomicidade do PostgreSQL, então testá-la contra um repositório falso não
+provaria nada. Suba o compose e aponte a variável para o banco exposto na
+porta 5433:
+
+```bash
+docker compose up -d postgres-estoque
+
+cd services/estoque
+TEST_DATABASE_URL="postgres://korp:korp@localhost:5433/estoque?sslmode=disable" go test ./...
+```
+
+No PowerShell:
+
+```powershell
+$env:TEST_DATABASE_URL = "postgres://korp:korp@localhost:5433/estoque?sslmode=disable"
+go test ./...
+```
+
+Sem a variável definida, esses testes são pulados em vez de falhar. O teste
+`TestBaixa_ConcorrenciaSaldoUnitario` dispara 12 goroutines simultâneas contra
+um produto de saldo 1 e verifica que exatamente uma baixa vence e que o saldo
+final é zero — nunca negativo.
+
 ## Scripts auxiliares
 
 | Script | O que faz |

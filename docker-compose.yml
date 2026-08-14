@@ -8,6 +8,10 @@ services:
     volumes:
       - estoque_db_data:/var/lib/postgresql/data
       - ./services/db/estoque_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # Exposto no host para inspecionar o banco e rodar os testes de
+    # integração do serviço de Estoque (ver services/estoque/.../repository_test.go).
+    ports:
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U korp -d estoque"]
       interval: 5s
@@ -23,6 +27,8 @@ services:
     volumes:
       - faturamento_db_data:/var/lib/postgresql/data
       - ./services/db/faturamento_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5434:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U korp -d faturamento"]
       interval: 5s

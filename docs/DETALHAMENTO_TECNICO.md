@@ -105,6 +105,27 @@ o item sobre uso de LINQ não se aplica.
 - **Logging estruturado** via `log/slog` para erros inesperados e falhas durante a
   compensação (auditável, sem interromper a resposta ao usuário).
 
+## Testes automatizados
+
+A estratégia de teste segue a natureza de cada garantia:
+
+- **Tratamento de falhas** (`services/faturamento/internal/estoqueclient/client_test.go`)
+  — testes unitários com `httptest`, subindo um serviço de Estoque falso que
+  responde como se estivesse instável. Verificam que o cliente se recupera de uma
+  falha transitória, que desiste com `ErrIndisponivel` após o limite de tentativas
+  em vez de tentar indefinidamente, que **não** gasta tentativas com erro de
+  negócio (saldo insuficiente), e que trata conexão recusada — o cenário exato do
+  `docker compose stop estoque`.
+- **Concorrência** (`services/estoque/internal/produto/repository_test.go`) —
+  testes de integração contra um PostgreSQL real. Aqui um repositório falso não
+  provaria nada, porque a garantia vem da atomicidade do banco e não do código Go.
+  O teste dispara 12 goroutines simultâneas contra um produto de saldo 1 e afirma
+  que exatamente uma baixa vence, que as demais recebem `ErrSaldoInsuficiente`, e
+  que o saldo final é zero — nunca negativo. Sem a variável `TEST_DATABASE_URL`
+  esses testes são pulados, para não quebrar o build de quem não tem banco à mão.
+- **Frontend** — a suíte do Angular CLI (Vitest), cobrindo a criação dos
+  componentes e serviços com as dependências injetadas.
+
 ## Requisitos obrigatórios — como foram atendidos
 
 - **Arquitetura de microsserviços**: dois serviços independentes (Estoque e Faturamento),
