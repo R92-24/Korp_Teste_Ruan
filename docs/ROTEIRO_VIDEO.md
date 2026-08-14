@@ -1,0 +1,272 @@
+# Roteiro para o vídeo de apresentação
+
+Guia prático para gravar a demonstração exigida no teste. Duração sugerida:
+**8 a 12 minutos**.
+
+---
+
+## Antes de começar
+
+### 1. Como gravar a tela
+
+O Windows 11 já vem com gravador embutido, não precisa instalar nada:
+
+1. Aperte **Win + G** (abre a Xbox Game Bar)
+2. Na janelinha **"Capturar"**, clique no ícone de **microfone** para ativar sua voz
+3. Clique no botão **Gravar** (círculo) ou aperte **Win + Alt + R**
+4. Para parar: **Win + Alt + R** de novo
+5. O vídeo fica em `Vídeos\Capturas`
+
+> Se preferir algo com mais controle (mostrar webcam, cortar trechos), o **OBS Studio**
+> é gratuito: https://obsproject.com
+
+### 2. Preparar o ambiente
+
+Deixe **tudo aberto e posicionado** antes de apertar gravar:
+
+- Uma janela do **navegador** em http://localhost:4200
+- Uma janela do **PowerShell** na pasta do projeto
+- O **VS Code** com o projeto aberto (para a parte de detalhamento técnico)
+
+Zere os dados para começar do zero:
+
+```powershell
+cd "C:\Users\PC  Gamer\.vscode\Korp_Teste_Ruan"
+.\scripts\reset-demo.ps1
+```
+
+---
+
+## Parte 1 — Apresentação (30 segundos)
+
+> "Olá, meu nome é Ruan. Este é o teste técnico da Korp: um sistema de emissão de
+> notas fiscais construído com arquitetura de microsserviços — um Angular no
+> frontend e dois serviços em Go no backend, cada um com seu próprio banco
+> PostgreSQL, tudo orquestrado por Docker Compose."
+
+Mostre rapidamente o `docker compose ps` no PowerShell, para evidenciar os cinco
+containers rodando:
+
+```powershell
+docker compose ps
+```
+
+---
+
+## Parte 2 — Cadastro de Produtos (1 minuto)
+
+1. No navegador, vá em **Produtos**
+2. Cadastre o primeiro produto:
+   - Código: `P001`
+   - Descrição: `Monitor 24 polegadas`
+   - Saldo: `10`
+   - Clique em **Cadastrar produto**
+3. Cadastre um segundo:
+   - Código: `P002`
+   - Descrição: `Teclado Mecânico`
+   - Saldo: `5`
+
+> "Os produtos são cadastrados previamente com código, descrição e saldo em
+> estoque, para depois serem usados nas notas fiscais. Esses dados estão sendo
+> persistidos fisicamente no PostgreSQL do serviço de Estoque."
+
+**Aponte o saldo do P001 = 10** — vamos acompanhar ele mudando.
+
+---
+
+## Parte 3 — Criar nota e adicionar itens (1 minuto)
+
+1. Vá em **Notas Fiscais** → clique em **Nova nota**
+2. Mostre que ela nasceu com **numeração sequencial** e status **Aberta**
+3. No campo de busca de produto, digite `mon` — mostre o autocomplete filtrando
+4. Selecione o `P001`, quantidade `2` → **Adicionar item**
+5. Adicione também o `P002`, quantidade `1`
+
+> "A nota é criada com numeração sequencial automática e já nasce com status
+> Aberta. A busca de produtos usa RxJS com debounce, e é importante notar: o
+> serviço de Faturamento não acessa o banco do Estoque — ele consulta o produto
+> via HTTP, respeitando a fronteira entre os microsserviços."
+
+---
+
+## Parte 4 — Impressão (1 minuto) ⭐ ponto central do teste
+
+1. Clique em **Imprimir**
+2. **Chame atenção para o spinner** no botão durante o processamento
+3. Mostre o status mudando para **Fechada**
+4. Volte em **Produtos** e mostre: **P001 caiu de 10 para 8** e P002 de 5 para 4
+
+> "Ao clicar em imprimir, aparece o indicador de processamento. Quando finaliza, a
+> nota passa para Fechada e o saldo dos produtos é debitado conforme a quantidade
+> usada — o P001 tinha 10, a nota usou 2, e agora tem 8."
+
+---
+
+## Parte 5 — Não permitir reimpressão (30 segundos)
+
+1. Ainda na nota fechada, mostre o botão **Imprimir desabilitado**
+
+> "Uma nota que não está Aberta não pode ser impressa novamente. Isso é bloqueado
+> tanto na interface, com o botão desabilitado, quanto no backend, que retorna um
+> erro 409 caso alguém tente chamar a API diretamente."
+
+*(Opcional — mostrar a validação no backend):*
+
+```powershell
+# troque o 1 pelo número da nota que você acabou de fechar
+try { Invoke-RestMethod -Uri "http://localhost:8082/notas/1/imprimir" -Method Post -ContentType "application/json" -Body '{}' }
+catch { "Bloqueado pelo backend: $($_.Exception.Response.StatusCode)" }
+```
+
+---
+
+## Parte 6 — Cenário de falha (2 minutos) ⭐ requisito obrigatório
+
+1. Crie uma **nova nota** e adicione um item (ex.: `P001`, quantidade `1`)
+2. **Não imprima ainda.** Vá ao PowerShell e derrube o serviço de Estoque:
+
+```powershell
+docker compose stop estoque
+```
+
+3. Mostre no `docker compose ps` que o container está parado
+4. Volte ao navegador e clique em **Imprimir**
+5. **Mostre a mensagem de erro** que aparece na tela
+6. Mostre que a nota **continua Aberta** (recarregue a página se quiser provar)
+7. Volte ao PowerShell e religue o serviço:
+
+```powershell
+docker compose start estoque
+```
+
+8. Clique em **Imprimir** de novo → agora funciona
+9. Mostre o saldo do produto tendo sido debitado corretamente
+
+> "Aqui está o tratamento de falhas. Com o serviço de Estoque fora do ar, o
+> Faturamento tenta se recuperar sozinho fazendo algumas tentativas com timeout
+> curto. Como o serviço continua indisponível, ele devolve um erro claro para o
+> usuário e — o mais importante — mantém a nota Aberta, sem debitar nada. O
+> sistema não fica em estado inconsistente. Assim que o serviço volta, a mesma
+> nota é impressa normalmente."
+
+**Ponto forte para mencionar:** se a falha acontecesse no meio de uma nota com
+vários itens, o sistema estorna automaticamente o que já foi debitado e reabre a
+nota — é uma compensação no estilo saga.
+
+---
+
+## Parte 7 — Concorrência (1 minuto) ⭐ requisito opcional implementado
+
+No PowerShell:
+
+```powershell
+.\scripts\demo-concorrencia.ps1
+```
+
+Deixe o script rodar e mostre o resultado na tela.
+
+> "Este é o requisito opcional de concorrência. O script cria um produto com saldo
+> 1 e duas notas, cada uma pedindo essa única unidade, e dispara as duas impressões
+> simultaneamente. Uma nota fecha com sucesso, a outra recebe saldo insuficiente, e
+> o saldo termina em zero — nunca negativo. Isso é garantido por um UPDATE atômico
+> condicional no PostgreSQL, sem precisar de lock explícito."
+
+---
+
+## Parte 8 — Detalhamento técnico (3 a 4 minutos) ⭐ exigido no PDF
+
+Abra o **VS Code** e vá comentando, com o código na tela. O conteúdo completo está
+em `docs/DETALHAMENTO_TECNICO.md` — use como cola.
+
+### 8.1 Ciclos de vida do Angular
+
+Abra `frontend/src/app/features/notas/nota-detail/nota-detail.ts`:
+
+> "Usei o `ngOnInit` em todas as telas para carregar os dados quando o componente
+> monta, em vez de fazer isso no construtor. E o `ngOnDestroy` aqui no detalhe da
+> nota, combinado com um Subject e o operador `takeUntil`, para cancelar as
+> inscrições quando o usuário sai da tela e evitar memory leak. Nos outros
+> componentes usei o `takeUntilDestroyed`, que é a API mais recente e faz a mesma
+> coisa sem a boilerplate."
+
+### 8.2 RxJS
+
+No mesmo arquivo, mostre o bloco do `buscaProdutoControl.valueChanges`:
+
+> "RxJS está no centro da aplicação. Além dos Observables do HttpClient, usei aqui
+> na busca de produtos o `debounceTime` de 250 milissegundos, o
+> `distinctUntilChanged` para ignorar valores repetidos e o `switchMap`, que
+> cancela a busca anterior quando o usuário continua digitando."
+
+### 8.3 Outras bibliotecas e componentes visuais
+
+> "Para componentes visuais usei o Angular Material: MatTable nas listagens,
+> MatFormField e MatAutocomplete nos formulários, MatProgressSpinner no indicador
+> de processamento da impressão, MatSnackBar para o feedback de erro e sucesso,
+> MatDialog para a confirmação de exclusão e MatChips para o status da nota. Além
+> disso, Reactive Forms para os formulários com validação e o Angular Router para
+> navegação."
+
+### 8.4 Gerenciamento de dependências no Go
+
+Abra `services/estoque/go.mod`:
+
+> "Cada microsserviço é um módulo Go independente, com seu próprio go.mod e go.sum
+> — Go Modules, o gerenciador nativo da linguagem. As versões das dependências
+> diretas ficam fixadas e o go.sum garante o checksum de todas as transitivas,
+> então o build é reprodutível. Os serviços não compartilham dependências entre
+> si, o que reforça o desacoplamento."
+
+### 8.5 Frameworks utilizados
+
+> "No backend usei o Gin como framework HTTP, para roteamento, binding de JSON e
+> middlewares, e o pgx como driver e pool de conexões do PostgreSQL. Optei por SQL
+> explícito em vez de ORM, justamente para ter controle total sobre as queries —
+> principalmente no update atômico do tratamento de concorrência."
+
+### 8.6 Tratamento de erros e exceções
+
+Abra `services/estoque/internal/apperror/apperror.go` e depois
+`services/faturamento/internal/nota/service.go` (função `Imprimir`):
+
+> "Criei um tipo de erro de domínio único, o AppError, com código, mensagem e
+> status HTTP. Os handlers traduzem esse erro para uma resposta JSON padronizada,
+> então o frontend sempre recebe o mesmo formato. Tem também um middleware de
+> recovery que captura qualquer panic e devolve um 500 tratado, em vez de derrubar
+> a conexão. E na comunicação entre os serviços, o cliente HTTP tem timeout e
+> retry para falhas transitórias, mas não repete erros de negócio, porque o
+> resultado não mudaria."
+
+Mostre a função `compensar`:
+
+> "E aqui está a compensação: se a impressão falhar depois de já ter debitado
+> alguns itens, o sistema estorna o que foi debitado e reabre a nota."
+
+### 8.7 LINQ
+
+> "Sobre o item de LINQ do documento: ele não se aplica nesta entrega, porque optei
+> por implementar o backend em Go e não em C#."
+
+---
+
+## Parte 9 — Encerramento (30 segundos)
+
+> "Resumindo: os três requisitos obrigatórios foram atendidos — arquitetura de
+> microsserviços com dois serviços independentes, tratamento de falha com
+> recuperação e feedback ao usuário, e persistência real em PostgreSQL. Além
+> disso, implementei o requisito opcional de tratamento de concorrência. O
+> repositório tem um README com as instruções para rodar tudo com um único comando
+> de docker compose. Obrigado!"
+
+---
+
+## Checklist antes de enviar
+
+- [ ] O vídeo mostra todas as telas desenvolvidas
+- [ ] O vídeo mostra o saldo sendo debitado após a impressão
+- [ ] O vídeo mostra o cenário de falha **e** a recuperação
+- [ ] O vídeo tem o detalhamento técnico falado (Parte 8)
+- [ ] Vídeo subido no Google Drive / OneDrive **com link público**
+- [ ] Repositório GitHub `Korp_Teste_Ruan` criado como **público**
+- [ ] E-mail para **rh@korp.com.br** com: link do repositório + link do vídeo +
+      detalhamento técnico

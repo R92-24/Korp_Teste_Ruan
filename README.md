@@ -95,6 +95,13 @@ consegue debitar o saldo; a outra recebe `409 SALDO_INSUFICIENTE` e permanece Ab
 garantido por um `UPDATE` atômico condicional no Postgres (`WHERE saldo >= quantidade`), sem
 necessidade de locks explícitos — ver `services/estoque/internal/produto/repository.go`.
 
+## Scripts auxiliares
+
+| Script | O que faz |
+|---|---|
+| `scripts/reset-demo.ps1` | Apaga os volumes dos bancos e sobe tudo do zero, para demonstrar com dados limpos |
+| `scripts/demo-concorrencia.ps1` | Executa o cenário de concorrência automaticamente (produto com saldo 1 disputado por duas notas impressas ao mesmo tempo) |
+
 ## Detalhamento técnico
 
 Ver [docs/DETALHAMENTO_TECNICO.md](docs/DETALHAMENTO_TECNICO.md) para as respostas ponto a
