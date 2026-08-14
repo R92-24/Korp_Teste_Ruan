@@ -12,7 +12,10 @@ Write-Host "Derrubando containers e apagando os volumes dos bancos..." -Foregrou
 docker compose down -v 2>&1 | Out-Null
 
 Write-Host "Subindo tudo novamente..." -ForegroundColor Cyan
-docker compose up -d 2>&1 | Out-Null
+# O --build garante que o que sobe reflete o código atual: sem ele, uma
+# alteração no frontend não apareceria e a demonstração rodaria em cima
+# de uma imagem antiga.
+docker compose up -d --build 2>&1 | Out-Null
 
 Pop-Location
 
