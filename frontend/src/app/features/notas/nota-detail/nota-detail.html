@@ -1,0 +1,103 @@
+<section class="page">
+  <a routerLink="/notas" class="back-link">&larr; Voltar para notas</a>
+
+  @if (loading()) {
+    <mat-spinner diameter="32" />
+  } @else if (nota(); as notaAtual) {
+    <header class="page-header">
+      <div>
+        <h1>Nota Fiscal nº {{ notaAtual.numero }}</h1>
+        <mat-chip [class.status-fechada]="notaAtual.status === 'Fechada'" [class.status-aberta]="notaAtual.status === 'Aberta'">
+          {{ notaAtual.status }}
+        </mat-chip>
+        <span class="created-at">Criada em {{ notaAtual.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="imprimir()"
+        [disabled]="notaAtual.status !== 'Aberta' || imprimindo() || notaAtual.itens.length === 0"
+      >
+        @if (imprimindo()) {
+          <ng-container>
+            <mat-spinner diameter="18" />
+            <span>Processando impressão...</span>
+          </ng-container>
+        } @else {
+          <ng-container>
+            <mat-icon>print</mat-icon>
+            <span>Imprimir</span>
+          </ng-container>
+        }
+      </button>
+    </header>
+
+    @if (notaAtual.status === 'Aberta') {
+      <div class="add-item-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Produto</mat-label>
+          <input
+            matInput
+            [formControl]="buscaProdutoControl"
+            [matAutocomplete]="auto"
+            placeholder="Buscar por código ou descrição"
+          />
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="exibirProduto" (optionSelected)="selecionarProduto($event)">
+            @for (produto of produtosFiltrados(); track produto.codigo) {
+              <mat-option [value]="produto">{{ produto.codigo }} — {{ produto.descricao }} (saldo: {{ produto.saldo }})</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="quantidade-field">
+          <mat-label>Quantidade</mat-label>
+          <input matInput type="number" [formControl]="quantidadeControl" min="1" />
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="adicionarItem()" [disabled]="!podeAdicionarItem() || addingItem()">
+          @if (addingItem()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            Adicionar item
+          }
+        </button>
+      </div>
+    }
+
+    <table mat-table [dataSource]="notaAtual.itens" class="mat-elevation-z1">
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef>Código</th>
+        <td mat-cell *matCellDef="let item">{{ item.codigo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="descricao">
+        <th mat-header-cell *matHeaderCellDef>Descrição</th>
+        <td mat-cell *matCellDef="let item">{{ item.descricao }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="quantidade">
+        <th mat-header-cell *matHeaderCellDef>Quantidade</th>
+        <td mat-cell *matCellDef="let item">{{ item.quantidade }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let item">
+          @if (notaAtual.status === 'Aberta') {
+            <button mat-icon-button (click)="removerItem(item)" aria-label="Remover item">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    @if (notaAtual.itens.length === 0) {
+      <p class="empty-state">Nenhum item incluído nesta nota ainda.</p>
+    }
+  }
+</section>

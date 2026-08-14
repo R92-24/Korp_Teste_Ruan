@@ -1,0 +1,38 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+table {
+  width: 100%;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.status-aberta {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+}
+
+.status-fechada {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.empty-state {
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  padding: 1rem;
+}

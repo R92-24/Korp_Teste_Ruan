@@ -1,0 +1,32 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.produto-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding-top: 4px;
+}
+
+table {
+  width: 100%;
+}
+
+.empty-state {
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  padding: 1rem;
+}

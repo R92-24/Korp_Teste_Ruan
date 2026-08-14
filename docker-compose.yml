@@ -1,0 +1,67 @@
+services:
+  postgres-estoque:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: estoque
+      POSTGRES_USER: korp
+      POSTGRES_PASSWORD: korp
+    volumes:
+      - estoque_db_data:/var/lib/postgresql/data
+      - ./services/db/estoque_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U korp -d estoque"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-faturamento:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: faturamento
+      POSTGRES_USER: korp
+      POSTGRES_PASSWORD: korp
+    volumes:
+      - faturamento_db_data:/var/lib/postgresql/data
+      - ./services/db/faturamento_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U korp -d faturamento"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  estoque:
+    build: ./services/estoque
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://korp:korp@postgres-estoque:5432/estoque?sslmode=disable
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres-estoque:
+        condition: service_healthy
+
+  faturamento:
+    build: ./services/faturamento
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://korp:korp@postgres-faturamento:5432/faturamento?sslmode=disable
+      ESTOQUE_BASE_URL: http://estoque:8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres-faturamento:
+        condition: service_healthy
+      estoque:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - estoque
+      - faturamento
+
+volumes:
+  estoque_db_data:
+  faturamento_db_data:

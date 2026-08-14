@@ -1,0 +1,82 @@
+<section class="page">
+  <h1>Cadastro de Produtos</h1>
+
+  <form class="produto-form" [formGroup]="form" (ngSubmit)="salvar()">
+    <mat-form-field appearance="outline">
+      <mat-label>Código</mat-label>
+      <input matInput formControlName="codigo" maxlength="50" />
+      @if (form.controls.codigo.hasError('required')) {
+        <mat-error>Código é obrigatório</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="descricao" maxlength="200" />
+      @if (form.controls.descricao.hasError('required')) {
+        <mat-error>Descrição é obrigatória</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Saldo</mat-label>
+      <input matInput type="number" formControlName="saldo" min="0" />
+      @if (form.controls.saldo.hasError('min')) {
+        <mat-error>Saldo não pode ser negativo</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="form-actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          {{ editingCodigo() ? 'Salvar alterações' : 'Cadastrar produto' }}
+        }
+      </button>
+      @if (editingCodigo()) {
+        <button mat-button type="button" (click)="cancelarEdicao()">Cancelar</button>
+      }
+    </div>
+  </form>
+
+  @if (loading()) {
+    <mat-spinner diameter="32" />
+  } @else {
+    <table mat-table [dataSource]="produtos()" class="mat-elevation-z1">
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef>Código</th>
+        <td mat-cell *matCellDef="let produto">{{ produto.codigo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="descricao">
+        <th mat-header-cell *matHeaderCellDef>Descrição</th>
+        <td mat-cell *matCellDef="let produto">{{ produto.descricao }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="saldo">
+        <th mat-header-cell *matHeaderCellDef>Saldo</th>
+        <td mat-cell *matCellDef="let produto">{{ produto.saldo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let produto">
+          <button mat-icon-button (click)="editar(produto)" aria-label="Editar produto">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="excluir(produto)" aria-label="Excluir produto">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    @if (produtos().length === 0) {
+      <p class="empty-state">Nenhum produto cadastrado ainda.</p>
+    }
+  }
+</section>

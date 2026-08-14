@@ -1,0 +1,67 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.back-link {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h1 {
+    margin: 0 0 0.5rem;
+  }
+}
+
+.created-at {
+  margin-left: 0.75rem;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.875rem;
+}
+
+.add-item-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.quantidade-field {
+  width: 140px;
+}
+
+table {
+  width: 100%;
+}
+
+.status-aberta {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+}
+
+.status-fechada {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.empty-state {
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  padding: 1rem;
+}

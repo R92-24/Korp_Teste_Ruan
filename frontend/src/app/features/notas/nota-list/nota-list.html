@@ -1,0 +1,51 @@
+<section class="page">
+  <header class="page-header">
+    <h1>Notas Fiscais</h1>
+    <button mat-flat-button color="primary" (click)="novaNota()" [disabled]="creating()">
+      @if (creating()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        Nova nota
+      }
+    </button>
+  </header>
+
+  @if (loading()) {
+    <mat-spinner diameter="32" />
+  } @else {
+    <table mat-table [dataSource]="notas()" class="mat-elevation-z1">
+      <ng-container matColumnDef="numero">
+        <th mat-header-cell *matHeaderCellDef>Número</th>
+        <td mat-cell *matCellDef="let nota">{{ nota.numero }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let nota">
+          <mat-chip [class.status-fechada]="nota.status === 'Fechada'" [class.status-aberta]="nota.status === 'Aberta'">
+            {{ nota.status }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Criada em</th>
+        <td mat-cell *matCellDef="let nota">{{ nota.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let nota">
+          <button mat-button (click)="abrir(nota)">Abrir</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="abrir(row)" class="clickable-row"></tr>
+    </table>
+
+    @if (notas().length === 0) {
+      <p class="empty-state">Nenhuma nota fiscal cadastrada ainda.</p>
+    }
+  }
+</section>

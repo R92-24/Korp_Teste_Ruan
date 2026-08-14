@@ -1,0 +1,17 @@
+# Node / Angular
+node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+
+# Go
+services/**/tmp/
+services/**/bin/
+
+# Env
+.env
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
