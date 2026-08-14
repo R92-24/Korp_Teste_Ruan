@@ -4,7 +4,6 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { NotaService } from '../../../core/services/nota';
@@ -20,7 +19,6 @@ import { ServiceBadge } from '../../../shared/service-badge/service-badge';
     DatePipe,
     MatTableModule,
     MatButtonModule,
-    MatChipsModule,
     MatProgressSpinnerModule,
     ServiceBadge,
   ],

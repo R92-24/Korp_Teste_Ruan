@@ -1,8 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" translate="no">
   <head>
     <meta charset="utf-8" />
     <title>Korp · Emissão de Notas Fiscais</title>
+    <!-- A interface já está em português e usa termos de negócio (Aberta,
+         Fechada, Saldo). A tradução automática do navegador chega a reescrever
+         esses rótulos e descaracteriza o sistema, então fica desativada. -->
+    <meta name="google" content="notranslate" />
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -14,7 +18,7 @@
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   </head>
-  <body>
+  <body class="notranslate">
     <app-root></app-root>
   </body>
 </html>

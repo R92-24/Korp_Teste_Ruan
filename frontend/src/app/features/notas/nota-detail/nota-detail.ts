@@ -9,7 +9,6 @@ import { debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'r
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -33,7 +32,6 @@ import { ServiceBadge } from '../../../shared/service-badge/service-badge';
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,

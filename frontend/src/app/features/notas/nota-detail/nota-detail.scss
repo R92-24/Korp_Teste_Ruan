@@ -64,13 +64,38 @@ table {
   width: 100%;
 }
 
-.status-aberta {
-  background-color: #e3f2fd;
+/* Selo próprio em vez de mat-chip: os estilos internos do Material vencem
+   por especificidade e a cor do status não chegava a aparecer. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.24rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  vertical-align: middle;
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+.status-pill.aberta {
+  background: #e7f1fd;
+  border-color: rgba(13, 71, 161, 0.22);
   color: #0d47a1;
 }
 
-.status-fechada {
-  background-color: #e8f5e9;
+.status-pill.fechada {
+  background: #e9f5ea;
+  border-color: rgba(27, 94, 32, 0.22);
   color: #1b5e20;
 }
 

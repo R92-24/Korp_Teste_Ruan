@@ -13,9 +13,9 @@
     <header class="page-header">
       <div>
         <h1>Nota Fiscal nº {{ notaAtual.numero }}</h1>
-        <mat-chip [class.status-fechada]="notaAtual.status === 'Fechada'" [class.status-aberta]="notaAtual.status === 'Aberta'">
+        <span class="status-pill" [class.fechada]="notaAtual.status === 'Fechada'" [class.aberta]="notaAtual.status === 'Aberta'">
           {{ notaAtual.status }}
-        </mat-chip>
+        </span>
         <span class="created-at">Criada em {{ notaAtual.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
       </div>
 
