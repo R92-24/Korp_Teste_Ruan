@@ -25,6 +25,7 @@ for ($i = 0; $i -lt 30; $i++) {
     try {
         Invoke-RestMethod -Uri "http://localhost:8081/health" -TimeoutSec 2 | Out-Null
         Invoke-RestMethod -Uri "http://localhost:8082/health" -TimeoutSec 2 | Out-Null
+        Invoke-RestMethod -Uri "http://localhost:8083/health" -TimeoutSec 2 | Out-Null
         $pronto = $true
         break
     } catch {
@@ -38,6 +39,7 @@ if ($pronto) {
     Write-Host "  Frontend:    http://localhost:4200"
     Write-Host "  Estoque:     http://localhost:8081"
     Write-Host "  Faturamento: http://localhost:8082"
+    Write-Host "  Assistente:  http://localhost:8083"
 } else {
     Write-Host "Os servicos nao responderam a tempo. Rode 'docker compose ps' para verificar." -ForegroundColor Red
 }
