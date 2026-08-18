@@ -214,7 +214,7 @@ Deixe o script rodar e mostre o resultado na tela.
 Abra o **VS Code** e vá comentando, com o código na tela. O conteúdo completo está
 em `docs/DETALHAMENTO_TECNICO.md` — use como cola.
 
-### 8.1 Ciclos de vida do Angular
+### 9.1 Ciclos de vida do Angular
 
 Abra `frontend/src/app/features/notas/nota-detail/nota-detail.ts`:
 
@@ -225,7 +225,7 @@ Abra `frontend/src/app/features/notas/nota-detail/nota-detail.ts`:
 > componentes usei o `takeUntilDestroyed`, que é a API mais recente e faz a mesma
 > coisa sem a boilerplate."
 
-### 8.2 RxJS
+### 9.2 RxJS
 
 No mesmo arquivo, mostre o bloco do `buscaProdutoControl.valueChanges`:
 
@@ -234,7 +234,7 @@ No mesmo arquivo, mostre o bloco do `buscaProdutoControl.valueChanges`:
 > `distinctUntilChanged` para ignorar valores repetidos e o `switchMap`, que
 > cancela a busca anterior quando o usuário continua digitando."
 
-### 8.3 Outras bibliotecas e componentes visuais
+### 9.3 Outras bibliotecas e componentes visuais
 
 > "Para componentes visuais usei o Angular Material: MatTable nas listagens,
 > MatFormField e MatAutocomplete nos formulários, MatProgressSpinner no indicador
@@ -247,7 +247,7 @@ No mesmo arquivo, mostre o bloco do `buscaProdutoControl.valueChanges`:
 > internos do componente venciam por especificidade e a cor não aparecia — com
 > CSS próprio resolvi em poucas linhas e com resultado previsível."
 
-### 8.4 Gerenciamento de dependências no Go
+### 9.4 Gerenciamento de dependências no Go
 
 Abra `services/estoque/go.mod`:
 
@@ -257,14 +257,14 @@ Abra `services/estoque/go.mod`:
 > então o build é reprodutível. Os serviços não compartilham dependências entre
 > si, o que reforça o desacoplamento."
 
-### 8.5 Frameworks utilizados
+### 9.5 Frameworks utilizados
 
 > "No backend usei o Gin como framework HTTP, para roteamento, binding de JSON e
 > middlewares, e o pgx como driver e pool de conexões do PostgreSQL. Optei por SQL
 > explícito em vez de ORM, justamente para ter controle total sobre as queries —
 > principalmente no update atômico do tratamento de concorrência."
 
-### 8.6 Tratamento de erros e exceções
+### 9.6 Tratamento de erros e exceções
 
 Abra `services/estoque/internal/apperror/apperror.go` e depois
 `services/faturamento/internal/nota/service.go` (função `Imprimir`):
@@ -282,7 +282,7 @@ Mostre a função `compensar`:
 > "E aqui está a compensação: se a impressão falhar depois de já ter debitado
 > alguns itens, o sistema estorna o que foi debitado e reabre a nota."
 
-### 8.7 LINQ
+### 9.7 LINQ
 
 > "Sobre o item de LINQ do documento: ele não se aplica nesta entrega, porque optei
 > por implementar o backend em Go e não em C#."
